@@ -1,0 +1,146 @@
+audio:
+  chunk_size: 88200
+  dim_f: 1024
+  dim_t: 171
+  hop_length: 441
+  n_fft: 2048
+  num_channels: 2
+  sample_rate: 44100
+  min_mean_abs: 0.000
+
+model:
+  dim: 256
+  depth: 5
+  stereo: true
+  num_stems: 1
+  time_transformer_depth: 1
+  freq_transformer_depth: 1
+  num_bands: 60
+  dim_head: 64
+  heads: 4
+  attn_dropout: 0.05
+  ff_dropout: 0.05
+  flash_attn: true
+  dim_freqs_in: 1025
+  sample_rate: 44100
+  stft_n_fft: 2048
+  stft_hop_length: 441
+  stft_win_length: 2048
+  stft_normalized: false
+  mask_estimator_depth: 2
+  multi_stft_resolution_loss_weight: 1.0
+  multi_stft_resolutions_window_sizes: !!python/tuple [2048, 1024, 512]
+  multi_stft_hop_size: 147
+  multi_stft_normalized: false
+
+loss_multistft:
+  fft_sizes:
+    - 1024
+    - 2048
+    - 4096
+  hop_sizes:
+    - 512
+    - 1024
+    - 2048
+  win_lengths:
+    - 1024
+    - 2048
+    - 4096
+  window: "hann_window"
+  scale: "mel"
+  n_bins: 128
+  sample_rate: 44100
+  perceptual_weighting: false
+  w_sc: 0.0
+  w_log_mag: 1.0
+  w_lin_mag: 0.0
+  w_phs: 0.0
+  mag_distance: "L1"
+
+training:
+  batch_size: 1
+  # ... rest of the training section ...
+  gradient_accumulation_steps: 4
+  grad_clip: 0.5  # Keep reduced for stable fine-tuning
+  instruments:
+    - vocals
+    - other
+  lr: 1.0e-5  # Keep reduced for fine-tuning
+  patience: 12  # Keep increased patience for fine-tuning
+  reduce_factor: 0.8  # Keep less aggressive LR reduction
+  target_instrument: vocals
+  num_epochs: 500
+  num_steps: 1000
+  augmentation: true  # Keep augmentations but with reduced intensity
+  use_mp3_compress: true
+  augmentation_mix: true
+  augmentation_loudness: true
+  augmentation_loudness_type: 1
+  augmentation_loudness_min: -3  # Keep reduced range
+  augmentation_loudness_max: 3
+  q: 0.95
+  coarse_loss_clip: false
+  ema_momentum: 0.9995  # Keep increased for smoother updates
+  optimizer: adamw
+  other_fix: true
+  use_amp: true
+  use_torch_checkpoint: true
+  warmup_steps: 100
+
+augmentations:
+  enable: true
+  loudness: true
+  loudness_min: 0.85  # Keep reduced intensity
+  loudness_max: 1.15
+  mixup: true
+  mixup_probs: [0.01]  # Keep reduced from 0.02
+  mixup_loudness_min: 0.85
+  mixup_loudness_max: 1.15
+
+  all:
+    channel_shuffle: 0.3  # Keep reduced from 0.5
+    random_polarity: 0.3  # Keep reduced from 0.5
+    random_inverse: 0.005  # Keep reduced from 0.01
+
+  vocals:
+    pitch_shift: 0.05  # Keep reduced from 0.1
+    pitch_shift_min_semitones: -2  # Keep reduced range
+    pitch_shift_max_semitones: 2
+
+  seven_band_parametric_eq: 0.15  # Keep reduced from 0.25
+  seven_band_parametric_eq_min_gain_db: -6  # Keep reduced range
+  seven_band_parametric_eq_max_gain_db: 6
+
+  tanh_distortion: 0.05  # Keep reduced from 0.1
+  tanh_distortion_min: 0.1
+  tanh_distortion_max: 0.5  # Keep reduced from 0.7
+
+  pedalboard_reverb: 0.03  # Keep reduced from 0.05
+  pedalboard_reverb_room_size_min: 0.3
+  pedalboard_reverb_room_size_max: 0.7
+  pedalboard_reverb_damping_min: 0.3
+  pedalboard_reverb_damping_max: 0.6
+  pedalboard_reverb_wet_level_min: 0.1
+  pedalboard_reverb_wet_level_max: 0.4  # Keep reduced from 0.6
+  pedalboard_reverb_dry_level_min: 0.4  # Keep increased from 0.3
+  pedalboard_reverb_dry_level_max: 1.0
+  pedalboard_reverb_width_min: 0.9
+  pedalboard_reverb_width_max: 1.0
+
+  gaussian_noise: 0.03  # Keep reduced from 0.05
+  gaussian_noise_min_amplitude: 0.0005  # Keep reduced from 0.001
+  gaussian_noise_max_amplitude: 0.005  # Keep reduced from 0.01
+
+  time_stretch: 0.03  # Keep reduced from 0.05
+  time_stretch_min_rate: 0.95  # Keep less aggressive stretching
+  time_stretch_max_rate: 1.05
+
+  mp3_compression: 0.03  # Keep reduced from 0.05
+  mp3_compression_min_bitrate: 96  # Keep increased from 64
+  mp3_compression_max_bitrate: 192
+  mp3_compression_backend: "lameenc"
+
+inference:
+  batch_size: 6  # Reduced from 8 for memory
+  dim_t: 171  # Match training dim_t
+  num_overlap: 4  # Keep increased for smoother output
