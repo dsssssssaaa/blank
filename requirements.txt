@@ -1,0 +1,6 @@
+torch
+torchaudio
+pyyaml
+numpy
+soundfile
+tqdm
