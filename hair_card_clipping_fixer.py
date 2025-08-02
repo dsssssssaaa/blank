@@ -44,9 +44,8 @@ class OBJECT_OT_fix_hair_card_clipping(bpy.types.Operator):
             bm = bmesh.new()
             bm.from_mesh(mesh)
 
-            # We need to transform the bmesh to world space to build a correct BVH tree
-            bm.transform(matrix=obj.matrix_world)
-
+            # Create the BVH tree from the local-space mesh data.
+            # No manual transformation is needed.
             bvhtree = BVHTree.FromBMesh(bm)
             bvhtrees_and_objects.append((bvhtree, obj))
             bm.free()
@@ -61,7 +60,11 @@ class OBJECT_OT_fix_hair_card_clipping(bpy.types.Operator):
                 bvhtree1, obj1 = bvhtrees_and_objects[i]
                 bvhtree2, obj2 = bvhtrees_and_objects[j]
 
-                if bvhtree1.overlap(bvhtree2):
+                # Use the 'other_matrix' argument to robustly check for overlaps between
+                # objects in different locations/rotations/scales.
+                # This matrix transforms bvhtree2's space into bvhtree1's space.
+                matrix = obj1.matrix_world.inverted() @ obj2.matrix_world
+                if bvhtree1.overlap(bvhtree2, matrix):
                     loc1 = obj1.matrix_world.translation
                     loc2 = obj2.matrix_world.translation
 
