@@ -50,7 +50,9 @@ class OBJECT_OT_fix_hair_card_clipping(bpy.types.Operator):
             bvhtree = BVHTree.FromBMesh(bm)
             bvhtrees_and_objects.append((bvhtree, obj))
             bm.free()
-            bpy.data.meshes.remove(mesh)
+            # Do not remove the mesh here. The mesh from to_mesh() is temporary
+            # and Blender will handle its memory automatically.
+            # Trying to remove it manually causes a crash.
 
         object_translations = {} # obj -> vector translation
 
